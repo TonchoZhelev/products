@@ -1,29 +1,18 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:products/constants/text_constants.dart';
-import 'package:products/data_sources/products_data_source.dart';
+import 'package:products/controllers/products_controller.dart';
 
 import '../models/products.dart';
 import '../ui_components/product_tile.dart';
+import '../utils/result.dart';
 
-final productsDataSource = ProductsDataSource(Dio());
-
-class ProductsPage extends StatefulWidget {
+class ProductsPage extends StatelessWidget {
   const ProductsPage({
+    required ProductsController controller,
     super.key,
-  });
+  }) : _productsController = controller;
 
-  @override
-  State<ProductsPage> createState() => _ProductsPageState();
-}
-
-class _ProductsPageState extends State<ProductsPage> {
-  final ValueNotifier<PaginatedProducts?> _products = ValueNotifier(null);
-
-  Future<void> _getItems() async {
-    final page = await productsDataSource.getProducts();
-    _products.value = page;
-  }
+  final ProductsController _productsController;
 
   @override
   Widget build(BuildContext context) {
@@ -33,25 +22,52 @@ class _ProductsPageState extends State<ProductsPage> {
         title: const Text(TextConstants.products),
       ),
       body: ValueListenableBuilder(
-        valueListenable: _products,
-        builder: (context, products, widget) {
-          if (products == null) {
-            return Center(
-              child: OutlinedButton(
-                onPressed: _getItems,
-                child: const Text(TextConstants.getItems),
-              ),
-            );
-          } else {
-            return ListView.builder(
-              itemCount: products.products.length,
-              itemBuilder: (context, index) {
-                final item = products.products[index];
-                return ProductTile(product: item);
-              },
-            );
-          }
-        },
+        valueListenable: _productsController,
+        builder: _buildBody,
+      ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    Result<PaginatedProducts>? result,
+    Widget? widget,
+  ) {
+    return switch (result) {
+      null => _buildButton(context),
+      ResultError<PaginatedProducts>(error: final error) =>
+        _buildButton(context, error: error),
+      ResultLoading<PaginatedProducts>() => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      ResultSuccess<PaginatedProducts>(value: final value) => ListView.builder(
+          itemCount: value.products.length,
+          itemBuilder: (context, index) {
+            final item = value.products[index];
+            return ProductTile(product: item);
+          },
+        ),
+    };
+  }
+
+  Widget _buildButton(BuildContext context, {Exception? error}) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          OutlinedButton(
+            onPressed: _productsController.getItems,
+            child: const Text(TextConstants.getItems),
+          ),
+          if (error != null)
+            Text(
+              'error: $error',
+              style: Theme.of(context)
+                  .textTheme
+                  .labelSmall
+                  ?.copyWith(color: Colors.red),
+            )
+        ],
       ),
     );
   }
