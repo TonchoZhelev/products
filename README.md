@@ -1,16 +1,13 @@
-# products
+# Products
 
 A new Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This project is a very simple flutter application that fetches some data over http, and displays it.
 
-A few resources to get you started if this is your first Flutter project:
+## How to run
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Go follow the installation instructions for flutter [here](https://docs.flutter.dev/get-started/install)
+2. After that setup an Android/ios emulator/simulator or connect a physical device
+3. Either run the application normally from Android Studio, or in a terminal shell navigate to the root directory of the application and execute the following shell command: `flutter run`
